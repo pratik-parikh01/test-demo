@@ -1,0 +1,30 @@
+services:
+  python-service:
+    build: ./python-service
+    container_name: users-service
+    ports:
+      - "5001:5001"
+    environment:
+      - PRODUCTS_SERVICE_URL=http://node-service:3000
+    depends_on:
+      node-service:
+        condition: service_healthy
+    networks:
+      - demo-net
+
+  node-service:
+    build: ./node-service
+    container_name: products-service
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - demo-net
+
+networks:
+  demo-net:
+    driver: bridge
